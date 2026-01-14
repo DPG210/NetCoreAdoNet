@@ -29,7 +29,7 @@ namespace NetCoreAdoNet
             }
         }
 
-        private async void LoadEmpleados()
+        private async Task LoadEmpleados()
         {
             string departamento = this.lstDepartamentos.SelectedItem.ToString();
             List<string> empleados = await this.repo.GetEmpleadosAsync(departamento);
@@ -42,10 +42,14 @@ namespace NetCoreAdoNet
 
         private async void  btnEliminar_Click(object sender, EventArgs e)
         {
-            string apellido = this.lstEmpleados.SelectedItem.ToString();
-            int registros = await this.repo.DeleteEmpleadoAsync(apellido);
-            MessageBox.Show("Eliminamos: " + registros);
-            this.LoadEmpleados();
+            if (this.lstEmpleados.SelectedIndex != -1)
+            {
+                string apellido = this.lstEmpleados.SelectedItem.ToString();
+                int registros = await this.repo.DeleteEmpleadoAsync(apellido);
+                MessageBox.Show("Eliminamos: " + registros);
+                this.LoadEmpleados();
+            }
+            
         }
 
         private void lstEmpleados_SelectedIndexChanged(object sender, EventArgs e)
@@ -54,8 +58,12 @@ namespace NetCoreAdoNet
         }
 
         private void lstDepartamentos_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            this.LoadEmpleados();
+        {   
+            if(this.lstDepartamentos.SelectedIndex != -1)
+            {
+                this.LoadEmpleados();
+            }
+            
         }
     }
 }
