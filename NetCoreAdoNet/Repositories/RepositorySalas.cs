@@ -20,26 +20,26 @@ namespace NetCoreAdoNet.Repositories
             this.com.Connection = this.cn;
         }
 
-        public List<string> GetNombreSalas()
+        public async Task <List<string>> GetNombreSalasAsync()
         {
             string sql = "select distinct NOMBRE from SALA";
             this.com.CommandType = CommandType.Text;
             this.com.CommandText = sql;
-            this.cn.Open();
-            this.reader = this.com.ExecuteReader();
+            await this.cn.OpenAsync();
+            this.reader = await this.com.ExecuteReaderAsync();
             //CREAMOS LA COLECCION A DEVOLVER
             List<string> salas = new List<string>();
-            while (this.reader.Read())
+            while (await this.reader.ReadAsync())
             {
                 string nombre = this.reader["NOMBRE"].ToString();
                 salas.Add(nombre);
             }
-            this.cn.Close();
-            this.reader.Close();
+            await this.cn.CloseAsync();
+            await this.reader.CloseAsync();
             return salas;
         }
 
-        public int UpdateSala(string newName, string oldName)
+        public async Task<int>  UpdateSalaAsync(string newName, string oldName)
         {
             string sql = "update SALA set NOMBRE=@newname where NOMBRE=@oldname";
             SqlParameter pamNew = new SqlParameter("@newname", newName);
@@ -48,9 +48,9 @@ namespace NetCoreAdoNet.Repositories
             this.com.Parameters.Add(pamOld);
             this.com.CommandType = CommandType.Text;
             this.com.CommandText = sql;
-            this.cn.Open();
-            int registros = this.com.ExecuteNonQuery();
-            this.cn.Close();
+            await this.cn.OpenAsync();
+            int registros = await this.com.ExecuteNonQueryAsync();
+            await this.cn.CloseAsync();
             this.com.Parameters.Clear();
             return registros;
         }
