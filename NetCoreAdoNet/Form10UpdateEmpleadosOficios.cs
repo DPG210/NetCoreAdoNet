@@ -1,4 +1,5 @@
-﻿using NetCoreAdoNet.Repositories;
+﻿using NetCoreAdoNet.Models;
+using NetCoreAdoNet.Repositories;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -46,11 +47,10 @@ namespace NetCoreAdoNet
                     this.lstEmpleados.Items.Add(ape);
                 }
 
-                List<string> data = await this.repo.GetSalarioEmpleadosAsync(oficio);
-                foreach(string dato in data)
-                {
-                    
-                }
+                CalculosSalario datos = await this.repo.GetSalarioEmpleadosAsync(oficio);
+                this.lblSumaSalarial.Text = datos.Suma.ToString();
+                this.lblMaximoSalario.Text = datos.Maximo.ToString();
+                this.lblMediaSalarial.Text = datos.Media.ToString();
             }
 
         }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Data;
+using NetCoreAdoNet.Models;
 
 namespace NetCoreAdoNet.Repositories
 {
@@ -72,28 +73,26 @@ namespace NetCoreAdoNet.Repositories
             return registros;
         }
 
-        public async Task<List<string>> GetSalarioEmpleadosAsync(string oficio)
+        public async Task<CalculosSalario> GetSalarioEmpleadosAsync(string oficio)
         {
             string sql = "select sum(salario) as suma,avg(salario) as media, max(salario) as maximo from EMP where oficio=@oficio";
             this.com.Parameters.AddWithValue("@oficio", oficio);
             this.com.CommandType = CommandType.Text;
             this.com.CommandText = sql;
             await this.cn.OpenAsync();
-            List<string> datos = new List<string>();
+            CalculosSalario data = new CalculosSalario();
             this.reader = await this.com.ExecuteReaderAsync();
-            while(await this.reader.ReadAsync())
+          
+            while (await this.reader.ReadAsync())
             {
-                string suma = this.reader["SUMA"].ToString();
-                string media = this.reader["MEDIA"].ToString();
-                string maximo = this.reader["Maximo"].ToString();
-                datos.Add(suma);
-                datos.Add(media);
-                datos.Add(maximo);
-            }
+                data.Suma= int.Parse(this.reader["SUMA"].ToString());
+                 data.Media = int.Parse(this.reader["MEDIA"].ToString());
+                 data.Maximo = int.Parse(this.reader["Maximo"].ToString());
+            }  
             
             await this.cn.CloseAsync();
             this.com.Parameters.Clear();
-            return datos;
+            return data;
         }
     }
 }
