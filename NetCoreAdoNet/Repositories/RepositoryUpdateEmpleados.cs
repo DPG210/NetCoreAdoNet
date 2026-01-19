@@ -82,14 +82,14 @@ namespace NetCoreAdoNet.Repositories
             await this.cn.OpenAsync();
             CalculosSalario data = new CalculosSalario();
             this.reader = await this.com.ExecuteReaderAsync();
-          
-            while (await this.reader.ReadAsync())
-            {
-                data.Suma= int.Parse(this.reader["SUMA"].ToString());
-                 data.Media = int.Parse(this.reader["MEDIA"].ToString());
-                 data.Maximo = int.Parse(this.reader["Maximo"].ToString());
-            }  
+
+            await this.reader.ReadAsync();
             
+            data.Suma= int.Parse(this.reader["SUMA"].ToString());
+            data.Media = int.Parse(this.reader["MEDIA"].ToString());
+            data.Maximo = int.Parse(this.reader["Maximo"].ToString());
+             
+            await this.reader.CloseAsync();
             await this.cn.CloseAsync();
             this.com.Parameters.Clear();
             return data;

@@ -33,6 +33,19 @@ namespace NetCoreAdoNet
 
         }
 
+        private async Task LoadSalarios()
+        {
+            int index = this.lstOficios.SelectedIndex;
+            if (index != -1)
+            {
+                string oficio = this.lstOficios.SelectedItem.ToString();
+                CalculosSalario datos = await this.repo.GetSalarioEmpleadosAsync(oficio);
+                this.lblSumaSalarial.Text = datos.Suma.ToString();
+                this.lblMaximoSalario.Text = datos.Maximo.ToString();
+                this.lblMediaSalarial.Text = datos.Media.ToString();
+            }
+        }
+
         private async void lstOficios_SelectedIndexChanged(object sender, EventArgs e)
         {
             int index = this.lstOficios.SelectedIndex;
@@ -47,11 +60,9 @@ namespace NetCoreAdoNet
                     this.lstEmpleados.Items.Add(ape);
                 }
 
-                CalculosSalario datos = await this.repo.GetSalarioEmpleadosAsync(oficio);
-                this.lblSumaSalarial.Text = datos.Suma.ToString();
-                this.lblMaximoSalario.Text = datos.Maximo.ToString();
-                this.lblMediaSalarial.Text = datos.Media.ToString();
+                
             }
+            this.LoadSalarios();
 
         }
 
@@ -63,7 +74,7 @@ namespace NetCoreAdoNet
                 await this.repo.UpdateSalarioEmpleadosAsync(oficio, incremento);
             MessageBox.Show("Registros afectados: " + registros);
 
-
+            this.LoadSalarios();
         }
     }
 }
