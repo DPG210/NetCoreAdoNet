@@ -1,4 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
+using NetCoreAdoNet.Models;
+using NetCoreAdoNet.Repositories;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -29,83 +31,36 @@ namespace NetCoreAdoNet
 {
     public partial class Form13ParametrosSalida : Form
     {
-        SqlConnection cn;
-        SqlCommand com;
-        SqlDataReader reader;
+        RepositoryParametersOut repo;
         public Form13ParametrosSalida()
         {
             InitializeComponent();
-            string connectionString = @"Data Source=LOCALHOST\DEVELOPER;Initial Catalog=HOSPITAL;Persist Security Info=True;User ID=SA;Encrypt=True;Trust Server Certificate=True";
-            this.cn = new SqlConnection(connectionString);
-            this.com = new SqlCommand();
-            this.com.Connection = this.cn;
+            this.repo = new RepositoryParametersOut();
             this.LoadDepartamentos();
         }
 
         private async Task LoadDepartamentos()
         {
-            string sql = "SP_ALL_DEPARTAMENTOS";
-            this.com.CommandType = CommandType.StoredProcedure;
-            this.com.CommandText = sql;
-            await this.cn.OpenAsync();
-            this.reader = await this.com.ExecuteReaderAsync();
+            List<string> departamentos = await this.repo.GetDepartamentosAsync();
             this.cmbDepartamentos.Items.Clear();
-            while(await this.reader.ReadAsync())
+            foreach(string nombre in departamentos)
             {
-                string nombre = this.reader["DNOMBRe"].ToString();
                 this.cmbDepartamentos.Items.Add(nombre);
             }
-            this.reader.CloseAsync();
-            this.cn.CloseAsync();
         }
 
         private async void btnMostrarDatos_Click(object sender, EventArgs e)
         {
-            string sql = "SP_EMPLEADOS_DEPARTAMENTOS_OUT";
-            //TENEMOS UN PARAMETRO DE ENTRADA, POR DEFECTO, TODOS SON DE ENTRADA
-            // PODEMOS SEGUIR USANDO AddWithValue CON DICHO PARAMETRO
             string nombre = this.cmbDepartamentos.SelectedItem.ToString();
-            SqlParameter pamNombre = new SqlParameter();
-            pamNombre.ParameterName = "@nombre";
-            pamNombre.Value = nombre;
-            this.com.Parameters.Add(pamNombre);
-            //LOS PARAMETRO DE SALIDA, DEBEMOS CREARLOS DE FORMA EXPLICITA
-            //EN ESTE EJEMPLO, NO HEMOS PUESTO VALORES POR DEFECTO A LOS PARAMETROS
-            //POR LO QUE SON OBLIGATORIOS
-            SqlParameter pamSuma = new SqlParameter();
-            pamSuma.ParameterName = "@suma";
-            pamSuma.Value = 0;
-            pamSuma.Direction = ParameterDirection.Output;
-            this.com.Parameters.Add(pamSuma);
-            SqlParameter pamMedia = new SqlParameter();
-            pamMedia.ParameterName = "@media";
-            pamMedia.Value = 0;
-            pamMedia.Direction = ParameterDirection.Output;
-            this.com.Parameters.Add(pamMedia);
-            SqlParameter pamPersonas = new SqlParameter();
-            pamPersonas.ParameterName = "@personas";
-            pamPersonas.Value = 0;
-            pamPersonas.Direction = ParameterDirection.Output;
-            this.com.Parameters.Add(pamPersonas);
-            this.com.CommandType = CommandType.StoredProcedure;
-            this.com.CommandText = sql;
-            await this.cn.OpenAsync();
-            this.reader = await this.com.ExecuteReaderAsync();
+            EmpleadosParametersOut model = await this.repo.GetEmpleadosModelAsync(nombre);
             this.lstPersonas.Items.Clear();
-            while(await this.reader.ReadAsync())
+            foreach(string ape in model.Apellidos)
             {
-                string apellido = this.reader["APELLIDO"].ToString();
-                this.lstPersonas.Items.Add(apellido);
+                this.lstPersonas.Items.Add(ape);
             }
-            //DIBUJAMOS LOS PARAMETROS
-            await this.reader.CloseAsync();
-            this.txtSumaSalarial.Text = pamSuma.Value.ToString();
-            this.txtMediaSalarial.Text = pamMedia.Value.ToString();
-            this.txtPersonas.Text = pamPersonas.Value.ToString();
-            //LIBERAMOS LOS RECURSOS DE LA CONEXION Y DEMAS
-            
-            await this.cn.CloseAsync();
-            this.com.Parameters.Clear();
+            this.txtSumaSalarial.Text = model.SumaSalarial.ToString();
+            this.txtMediaSalarial.Text = model.MediaSalarial.ToString();
+            this.txtPersonas.Text = model.Personas.ToString();
         }
     }
 }
